@@ -1,0 +1,255 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { TradingViewChart } from "@/components/TradingViewChart";
+import { AnimatedMetric } from "@/components/AnimatedMetric";
+import {
+  MARKET,
+  type PredictionMode,
+  computeMetrics,
+  formatForecastLabel,
+  formatMultiplier,
+  formatPercent,
+  formatUsd,
+  resolveForecastRange,
+} from "@/lib/probability";
+
+const MODES: { id: PredictionMode; label: string }[] = [
+  { id: "range", label: "Range" },
+  { id: "above", label: "Above" },
+  { id: "below", label: "Below" },
+];
+
+function priceToPercent(price: number): number {
+  return (
+    ((price - MARKET.minPrice) / (MARKET.maxPrice - MARKET.minPrice)) * 100
+  );
+}
+
+function percentToPrice(percent: number): number {
+  const t = Math.max(0, Math.min(100, percent)) / 100;
+  return Math.round(
+    MARKET.minPrice + t * (MARKET.maxPrice - MARKET.minPrice)
+  );
+}
+
+interface PredictionSliderProps {
+  mode: PredictionMode;
+  rangeLow: number;
+  rangeHigh: number;
+  threshold: number;
+  onRangeChange: (low: number, high: number) => void;
+  onThresholdChange: (value: number) => void;
+}
+
+function PredictionSlider({
+  mode,
+  rangeLow,
+  rangeHigh,
+  threshold,
+  onRangeChange,
+  onThresholdChange,
+}: PredictionSliderProps) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [dragging, setDragging] = useState<"low" | "high" | "single" | null>(
+    null
+  );
+
+  const lowPct = priceToPercent(rangeLow);
+  const highPct = priceToPercent(rangeHigh);
+  const thresholdPct = priceToPercent(threshold);
+
+  const updateFromClientX = useCallback(
+    (clientX: number, handle: "low" | "high" | "single") => {
+      const track = trackRef.current;
+      if (!track) return;
+      const rect = track.getBoundingClientRect();
+      const pct = ((clientX - rect.left) / rect.width) * 100;
+      const price = percentToPrice(pct);
+      const minGap = 20;
+
+      if (handle === "single") {
+        onThresholdChange(
+          Math.max(MARKET.minPrice, Math.min(MARKET.maxPrice, price))
+        );
+        return;
+      }
+
+      if (handle === "low") {
+        onRangeChange(
+          Math.max(MARKET.minPrice, Math.min(price, rangeHigh - minGap)),
+          rangeHigh
+        );
+      } else {
+        onRangeChange(
+          rangeLow,
+          Math.min(MARKET.maxPrice, Math.max(price, rangeLow + minGap))
+        );
+      }
+    },
+    [rangeLow, rangeHigh, onRangeChange, onThresholdChange]
+  );
+
+  useEffect(() => {
+    if (!dragging) return;
+    const onMove = (e: PointerEvent) => updateFromClientX(e.clientX, dragging);
+    const onUp = () => setDragging(null);
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    };
+  }, [dragging, updateFromClientX]);
+
+  const fillStyle =
+    mode === "range"
+      ? { left: `${lowPct}%`, width: `${highPct - lowPct}%` }
+      : mode === "above"
+        ? { left: `${thresholdPct}%`, width: `${100 - thresholdPct}%` }
+        : { left: "0%", width: `${thresholdPct}%` };
+
+  const handles: { id: "low" | "high" | "single"; pct: number }[] =
+    mode === "range"
+      ? [
+          { id: "low", pct: lowPct },
+          { id: "high", pct: highPct },
+        ]
+      : [{ id: "single", pct: thresholdPct }];
+
+  return (
+    <div className="px-0.5 py-1">
+      <div
+        ref={trackRef}
+        className="slider-rail slider-rail-compact"
+        role="group"
+        aria-label="Forecast price selection"
+      >
+        <div className="slider-track-bg" />
+        <motion.div
+          className="slider-track-fill"
+          style={fillStyle}
+          layout
+          transition={{ type: "spring", stiffness: 380, damping: 36 }}
+        />
+        {handles.map(({ id, pct }) => (
+          <button
+            key={id}
+            type="button"
+            className={`slider-handle slider-handle-compact ${dragging === id ? "slider-handle-dragging" : ""}`}
+            style={{ left: `${pct}%` }}
+            onPointerDown={(e) => {
+              e.preventDefault();
+              setDragging(id);
+            }}
+            aria-label={`Adjust ${id} forecast`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function MarketDemo() {
+  const [mode, setMode] = useState<PredictionMode>("range");
+  const [rangeLow, setRangeLow] = useState<number>(MARKET.defaultRangeLow);
+  const [rangeHigh, setRangeHigh] = useState<number>(MARKET.defaultRangeHigh);
+  const [threshold, setThreshold] = useState<number>(MARKET.defaultThreshold);
+
+  const { low, high } = resolveForecastRange(
+    mode,
+    rangeLow,
+    rangeHigh,
+    threshold
+  );
+  const metrics = computeMetrics(low, high);
+  const forecastLabel = formatForecastLabel(
+    mode,
+    rangeLow,
+    rangeHigh,
+    threshold
+  );
+
+  const applyMode = (next: PredictionMode) => {
+    setMode(next);
+    if (next === "range") {
+      setRangeLow(300);
+      setRangeHigh(700);
+    } else {
+      setThreshold(500);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.9, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+      className="prediction-focal w-full"
+    >
+      <div className="grid items-center gap-5 lg:grid-cols-[1.55fr_1fr] lg:gap-7">
+        <div className="min-w-0">
+          <TradingViewChart />
+        </div>
+
+        <div className="flex flex-col justify-center gap-4 lg:gap-4">
+          <div className="flex flex-wrap gap-1.5">
+            {MODES.map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => applyMode(m.id)}
+                className={`mode-pill mode-pill-compact rounded-full px-3 py-1.5 text-[12px] font-medium tracking-wide transition-all duration-200 ${
+                  mode === m.id ? "mode-pill-active" : "hover:bg-white/12"
+                }`}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={forecastLabel}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="text-shadow-soft text-xl font-semibold tracking-[-0.03em] text-white tabular-nums lg:text-[1.35rem]"
+            >
+              {forecastLabel}
+            </motion.p>
+          </AnimatePresence>
+
+          <PredictionSlider
+            mode={mode}
+            rangeLow={rangeLow}
+            rangeHigh={rangeHigh}
+            threshold={threshold}
+            onRangeChange={(low, high) => {
+              setRangeLow(low);
+              setRangeHigh(high);
+            }}
+            onThresholdChange={setThreshold}
+          />
+
+          <div className="grid grid-cols-3 gap-3 border-t border-white/15 pt-4 lg:gap-4">
+            <AnimatedMetric
+              label="Win probability"
+              value={formatPercent(metrics.winProbability)}
+            />
+            <AnimatedMetric
+              label="Potential return"
+              value={formatMultiplier(metrics.potentialReturn)}
+            />
+            <AnimatedMetric
+              label="Receive if correct"
+              value={formatUsd(metrics.receiveIfCorrect)}
+            />
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
