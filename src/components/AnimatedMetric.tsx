@@ -14,12 +14,11 @@ export function AnimatedMetric({ label, value, shortLabel }: AnimatedMetricProps
   const [flash, setFlash] = useState(false);
 
   useEffect(() => {
-    if (prev.current !== value) {
-      setFlash(true);
-      prev.current = value;
-      const t = setTimeout(() => setFlash(false), 350);
-      return () => clearTimeout(t);
-    }
+    if (prev.current === value) return;
+    prev.current = value;
+    setFlash(true);
+    const t = setTimeout(() => setFlash(false), 200);
+    return () => clearTimeout(t);
   }, [value]);
 
   return (
@@ -31,8 +30,10 @@ export function AnimatedMetric({ label, value, shortLabel }: AnimatedMetricProps
         {label}
       </p>
       <motion.p
-        animate={{ opacity: flash ? 0.7 : 1 }}
-        transition={{ duration: 0.2 }}
+        key={value}
+        initial={false}
+        animate={{ opacity: flash ? 0.85 : 1 }}
+        transition={{ duration: 0.12 }}
         className="text-shadow-soft mt-1 text-base font-semibold leading-none tracking-[-0.02em] text-white tabular-nums sm:text-lg lg:mt-1 lg:text-xl"
       >
         {value}

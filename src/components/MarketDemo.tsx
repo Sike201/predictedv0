@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { TradingViewChart } from "@/components/TradingViewChart";
 import { AnimatedMetric } from "@/components/AnimatedMetric";
 import {
@@ -52,9 +52,16 @@ function PredictionSlider({
   onThresholdChange,
 }: PredictionSliderProps) {
   const trackRef = useRef<HTMLDivElement>(null);
+  const rangeRef = useRef({ low: rangeLow, high: rangeHigh });
+  const onRangeChangeRef = useRef(onRangeChange);
+  const onThresholdChangeRef = useRef(onThresholdChange);
   const [dragging, setDragging] = useState<"low" | "high" | "single" | null>(
     null
   );
+
+  rangeRef.current = { low: rangeLow, high: rangeHigh };
+  onRangeChangeRef.current = onRangeChange;
+  onThresholdChangeRef.current = onThresholdChange;
 
   const lowPct = priceToPercent(rangeLow);
   const highPct = priceToPercent(rangeHigh);
@@ -70,30 +77,40 @@ function PredictionSlider({
       const minGap = 20;
 
       if (handle === "single") {
-        onThresholdChange(
+        onThresholdChangeRef.current(
           Math.max(MARKET.minPrice, Math.min(MARKET.maxPrice, price))
         );
         return;
       }
 
+      const { low, high } = rangeRef.current;
+
       if (handle === "low") {
-        onRangeChange(
-          Math.max(MARKET.minPrice, Math.min(price, rangeHigh - minGap)),
-          rangeHigh
+        const newLow = Math.max(
+          MARKET.minPrice,
+          Math.min(price, high - minGap)
         );
+        rangeRef.current = { low: newLow, high };
+        onRangeChangeRef.current(newLow, high);
       } else {
-        onRangeChange(
-          rangeLow,
-          Math.min(MARKET.maxPrice, Math.max(price, rangeLow + minGap))
+        const newHigh = Math.min(
+          MARKET.maxPrice,
+          Math.max(price, low + minGap)
         );
+        rangeRef.current = { low, high: newHigh };
+        onRangeChangeRef.current(low, newHigh);
       }
     },
-    [rangeLow, rangeHigh, onRangeChange, onThresholdChange]
+    []
   );
+
+  const updateFromClientXRef = useRef(updateFromClientX);
+  updateFromClientXRef.current = updateFromClientX;
 
   useEffect(() => {
     if (!dragging) return;
-    const onMove = (e: PointerEvent) => updateFromClientX(e.clientX, dragging);
+    const onMove = (e: PointerEvent) =>
+      updateFromClientXRef.current(e.clientX, dragging);
     const onUp = () => setDragging(null);
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
@@ -101,7 +118,7 @@ function PredictionSlider({
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
     };
-  }, [dragging, updateFromClientX]);
+  }, [dragging]);
 
   const fillStyle =
     mode === "range"
@@ -134,11 +151,7 @@ function PredictionSlider({
           aria-label="Forecast price selection"
         >
           <div className="slider-track-bg" aria-hidden />
-          <motion.div
-            className="slider-track-fill"
-            style={fillStyle}
-            transition={{ type: "spring", stiffness: 380, damping: 36 }}
-          />
+          <div className="slider-track-fill" style={fillStyle} />
           {handles.map(({ id, pct }) => (
             <button
               key={id}
@@ -171,12 +184,7 @@ export function MarketDemo() {
     threshold
   );
   const metrics = computeMetrics(low, high);
-  const forecastLabel = formatForecastLabel(
-    mode,
-    rangeLow,
-    rangeHigh,
-    threshold
-  );
+  const forecastLabel = formatForecastLabel(mode, low, high, threshold);
 
   const applyMode = (next: PredictionMode) => {
     setMode(next);
@@ -216,18 +224,9 @@ export function MarketDemo() {
             ))}
           </div>
 
-          <AnimatePresence mode="wait">
-            <motion.p
-              key={forecastLabel}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="text-shadow-soft text-center text-[1.35rem] font-semibold leading-tight tracking-[-0.03em] text-white tabular-nums sm:text-xl lg:text-left lg:text-[1.35rem]"
-            >
-              {forecastLabel}
-            </motion.p>
-          </AnimatePresence>
+          <p className="text-shadow-soft text-center text-[1.35rem] font-semibold leading-tight tracking-[-0.03em] text-white tabular-nums sm:text-xl lg:text-left lg:text-[1.35rem]">
+            {forecastLabel}
+          </p>
 
           <PredictionSlider
             mode={mode}

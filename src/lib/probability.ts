@@ -79,8 +79,8 @@ export function computeMetrics(low: number, high: number): ForecastMetrics {
 
 export function formatForecastLabel(
   mode: PredictionMode,
-  rangeLow: number,
-  rangeHigh: number,
+  low: number,
+  high: number,
   threshold: number
 ): string {
   switch (mode) {
@@ -89,7 +89,7 @@ export function formatForecastLabel(
     case "below":
       return `Below ${formatPrice(threshold)}`;
     default:
-      return `${formatPrice(rangeLow)} — ${formatPrice(rangeHigh)}`;
+      return `${formatPrice(low)} — ${formatPrice(high)}`;
   }
 }
 
