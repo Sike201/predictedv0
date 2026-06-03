@@ -1,7 +1,7 @@
 /** Market distribution parameters (mocked) */
 export const MARKET = {
   minPrice: 50,
-  maxPrice: 600,
+  maxPrice: 800,
   mean: 280,
   stdDev: 120,
   defaultRangeLow: 300,

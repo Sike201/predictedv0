@@ -22,9 +22,9 @@ const MODES: { id: PredictionMode; label: string }[] = [
 ];
 
 function priceToPercent(price: number): number {
-  return (
-    ((price - MARKET.minPrice) / (MARKET.maxPrice - MARKET.minPrice)) * 100
-  );
+  const pct =
+    ((price - MARKET.minPrice) / (MARKET.maxPrice - MARKET.minPrice)) * 100;
+  return Math.max(0, Math.min(100, pct));
 }
 
 function percentToPrice(percent: number): number {
@@ -105,10 +105,16 @@ function PredictionSlider({
 
   const fillStyle =
     mode === "range"
-      ? { left: `${lowPct}%`, width: `${highPct - lowPct}%` }
+      ? {
+          left: `${lowPct}%`,
+          width: `${Math.max(0, Math.min(100 - lowPct, highPct - lowPct))}%`,
+        }
       : mode === "above"
-        ? { left: `${thresholdPct}%`, width: `${100 - thresholdPct}%` }
-        : { left: "0%", width: `${thresholdPct}%` };
+        ? {
+            left: `${thresholdPct}%`,
+            width: `${Math.max(0, 100 - thresholdPct)}%`,
+          }
+        : { left: "0%", width: `${Math.max(0, thresholdPct)}%` };
 
   const handles: { id: "low" | "high" | "single"; pct: number }[] =
     mode === "range"
@@ -131,7 +137,6 @@ function PredictionSlider({
           <motion.div
             className="slider-track-fill"
             style={fillStyle}
-            layout
             transition={{ type: "spring", stiffness: 380, damping: 36 }}
           />
           {handles.map(({ id, pct }) => (
@@ -195,7 +200,7 @@ export function MarketDemo() {
           <TradingViewChart />
         </div>
 
-        <div className="controls-panel flex w-full min-w-0 flex-col gap-5 sm:gap-4 lg:gap-4">
+        <div className="controls-panel flex w-full min-w-0 flex-col gap-5 px-1 sm:px-0 sm:gap-4 lg:gap-4">
           <div className="flex flex-wrap justify-center gap-2 lg:justify-start">
             {MODES.map((m) => (
               <button
