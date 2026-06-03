@@ -60,9 +60,9 @@ export function WaitlistForm() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.75, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
       onSubmit={handleSubmit}
-      className="mx-auto w-full max-w-sm lg:max-w-[22rem]"
+      className="mx-auto w-full max-w-md lg:max-w-[22rem]"
     >
-      <div className="flex gap-2">
+      <div className="flex flex-col gap-2.5 sm:flex-row sm:gap-2">
         <input
           type="email"
           name="email"
@@ -78,12 +78,12 @@ export function WaitlistForm() {
           autoComplete="email"
           required
           disabled={status === "loading" || status === "success"}
-          className="waitlist-field text-shadow-soft h-10 flex-1 rounded-full px-4 text-[13px] disabled:opacity-60"
+          className="waitlist-field text-shadow-soft h-11 w-full min-w-0 rounded-full px-4 text-[16px] sm:h-10 sm:text-[13px] disabled:opacity-60"
         />
         <button
           type="submit"
           disabled={status === "loading" || status === "success"}
-          className="h-10 shrink-0 rounded-full bg-white px-5 text-[12px] font-semibold text-black shadow-[0_4px_20px_rgba(0,0,0,0.22)] transition-all hover:bg-white/95 disabled:opacity-55"
+          className="h-11 w-full shrink-0 rounded-full bg-white px-5 text-[14px] font-semibold text-black shadow-[0_4px_20px_rgba(0,0,0,0.22)] transition-all hover:bg-white/95 disabled:opacity-55 sm:h-10 sm:w-auto sm:text-[12px]"
         >
           {status === "loading" ? "Joining…" : "Join Waitlist"}
         </button>
@@ -97,9 +97,7 @@ export function WaitlistForm() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             className={`text-shadow-soft mt-2.5 text-center text-[13px] ${
-              status === "error"
-                ? "text-red-100"
-                : "text-white/90"
+              status === "error" ? "text-red-100" : "text-white/90"
             }`}
             role={status === "error" ? "alert" : "status"}
           >

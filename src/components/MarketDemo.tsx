@@ -119,7 +119,7 @@ function PredictionSlider({
       : [{ id: "single", pct: thresholdPct }];
 
   return (
-    <div className="px-0.5 py-1">
+    <div className="w-full px-0.5 py-1">
       <div
         ref={trackRef}
         className="slider-rail slider-rail-compact"
@@ -186,21 +186,21 @@ export function MarketDemo() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.9, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
-      className="prediction-focal w-full"
+      className="prediction-focal w-full min-w-0"
     >
-      <div className="grid items-center gap-5 lg:grid-cols-[1.55fr_1fr] lg:gap-7">
-        <div className="min-w-0">
+      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1.55fr_1fr] lg:items-center lg:gap-7">
+        <div className="min-w-0 w-full">
           <TradingViewChart />
         </div>
 
-        <div className="flex flex-col justify-center gap-4 lg:gap-4">
-          <div className="flex flex-wrap gap-1.5">
+        <div className="flex w-full min-w-0 flex-col gap-5 sm:gap-4 lg:gap-4">
+          <div className="flex flex-wrap justify-center gap-2 lg:justify-start">
             {MODES.map((m) => (
               <button
                 key={m.id}
                 type="button"
                 onClick={() => applyMode(m.id)}
-                className={`mode-pill mode-pill-compact rounded-full px-3 py-1.5 text-[12px] font-medium tracking-wide transition-all duration-200 ${
+                className={`mode-pill mode-pill-compact rounded-full px-3.5 py-2 text-[12px] font-medium tracking-wide transition-all duration-200 sm:px-3 sm:py-1.5 ${
                   mode === m.id ? "mode-pill-active" : "hover:bg-white/12"
                 }`}
               >
@@ -216,7 +216,7 @@ export function MarketDemo() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="text-shadow-soft text-xl font-semibold tracking-[-0.03em] text-white tabular-nums lg:text-[1.35rem]"
+              className="text-shadow-soft text-center text-[1.35rem] font-semibold leading-tight tracking-[-0.03em] text-white tabular-nums sm:text-xl lg:text-left lg:text-[1.35rem]"
             >
               {forecastLabel}
             </motion.p>
@@ -234,18 +234,21 @@ export function MarketDemo() {
             onThresholdChange={setThreshold}
           />
 
-          <div className="grid grid-cols-3 gap-3 border-t border-white/15 pt-4 lg:gap-4">
+          <div className="metrics-grid grid grid-cols-3 gap-2 border-t border-white/15 pt-4 sm:gap-3 lg:gap-4">
             <AnimatedMetric
               label="Win probability"
               value={formatPercent(metrics.winProbability)}
+              shortLabel="Win prob."
             />
             <AnimatedMetric
               label="Potential return"
               value={formatMultiplier(metrics.potentialReturn)}
+              shortLabel="Return"
             />
             <AnimatedMetric
               label="Receive if correct"
               value={formatUsd(metrics.receiveIfCorrect)}
+              shortLabel="If correct"
             />
           </div>
         </div>

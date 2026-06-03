@@ -25,6 +25,14 @@ body {
   font-family: var(--font-sans-stack);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Mobile: natural scroll; desktop: single viewport */
+@media (max-width: 1023px) {
+  .page-shell {
+    justify-content: flex-start;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -32,6 +40,16 @@ body {
   body {
     height: 100%;
     overflow: hidden;
+  }
+
+  .page-shell {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 380px) {
+  .metrics-grid {
+    gap: 0.375rem;
   }
 }
 

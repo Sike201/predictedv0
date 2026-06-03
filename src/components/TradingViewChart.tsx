@@ -136,7 +136,7 @@ export function TradingViewChart() {
   }, []);
 
   return (
-    <div className="tradingview-mount relative h-[200px] w-full sm:h-[210px] lg:h-[195px]">
+    <div className="tradingview-mount relative h-[180px] w-full min-w-0 sm:h-[200px] lg:h-[195px]">
       {status === "loading" && (
         <div
           className="pointer-events-none absolute inset-0 animate-pulse bg-white/[0.04]"
