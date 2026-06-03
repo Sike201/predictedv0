@@ -9,7 +9,7 @@ export function BackgroundVideo() {
         loop
         playsInline
         className="absolute inset-0 h-full w-full object-cover"
-        src="/background.mp4"
+        src="/vecteezy_loop-animation-of-empty-water-surface-3d-rendering_30337717.webm"
       />
       <div className="absolute inset-0 backdrop-blur-[1px]" />
       <div
