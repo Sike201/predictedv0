@@ -34,7 +34,6 @@ body {
     justify-content: flex-start;
   }
 }
-
 @media (min-width: 1024px) {
   html,
   body {
@@ -47,25 +46,9 @@ body {
   }
 }
 
-@media (max-width: 1023px) {
-  .slider-rail {
-    height: 48px;
-    padding-inline: 14px;
-  }
-
-  .slider-handle {
-    width: 20px;
-    height: 20px;
-  }
-}
-
 @media (max-width: 380px) {
   .metrics-grid {
     gap: 0.375rem;
-  }
-
-  .slider-rail {
-    padding-inline: 12px;
   }
 }
 
@@ -134,24 +117,46 @@ body {
     0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
-/* Range slider — inset track so handles don't clip on mobile */
+/* Range slider — inset zone keeps handles inside viewport */
 .slider-zone {
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-  overflow: visible;
+}
+
+.slider-track-inset {
+  margin-inline: 10px;
+}
+
+@media (max-width: 1023px) {
+  .slider-zone {
+    padding-inline: 0;
+  }
+
+  .slider-track-inset {
+    margin-inline: 16px;
+  }
+
+  .slider-track {
+    height: 48px;
+  }
+
+  .slider-handle {
+    width: 20px;
+    height: 20px;
+  }
 }
 
 .controls-panel {
   overflow: visible;
+  width: 100%;
+  max-width: 100%;
 }
 
-.slider-rail {
+.slider-track {
   position: relative;
   width: 100%;
   height: 40px;
-  box-sizing: border-box;
-  padding-inline: 11px;
   touch-action: none;
 }
 
@@ -166,11 +171,6 @@ body {
   background: rgba(255, 255, 255, 0.22);
 }
 
-.mode-pill-compact {
-  padding-top: 0.375rem;
-  padding-bottom: 0.375rem;
-}
-
 .slider-track-fill {
   position: absolute;
   top: 50%;
@@ -183,9 +183,7 @@ body {
     rgba(255, 255, 255, 0.95) 50%,
     rgba(255, 255, 255, 0.55) 100%
   );
-  box-shadow:
-    0 0 20px rgba(255, 255, 255, 0.35),
-    0 0 40px rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.25);
 }
 
 .slider-handle {
@@ -202,19 +200,22 @@ body {
   border: 2px solid rgba(255, 255, 255, 0.95);
   background: #fff;
   box-shadow:
-    0 0 0 4px rgba(255, 255, 255, 0.1),
-    0 0 20px rgba(255, 255, 255, 0.4),
-    0 2px 8px rgba(0, 0, 0, 0.2);
+    0 0 0 3px rgba(255, 255, 255, 0.08),
+    0 0 12px rgba(255, 255, 255, 0.35);
   touch-action: none;
   transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-/* Larger touch target without changing visual size */
 .slider-handle::before {
   content: "";
   position: absolute;
-  inset: -14px;
+  inset: -10px;
   border-radius: 999px;
+}
+
+.mode-pill-compact {
+  padding-top: 0.375rem;
+  padding-bottom: 0.375rem;
 }
 
 .slider-handle:hover {

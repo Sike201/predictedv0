@@ -119,33 +119,35 @@ function PredictionSlider({
       : [{ id: "single", pct: thresholdPct }];
 
   return (
-    <div className="slider-zone w-full max-w-full">
-      <div
-        ref={trackRef}
-        className="slider-rail"
-        role="group"
-        aria-label="Forecast price selection"
-      >
-        <div className="slider-track-bg" aria-hidden />
-        <motion.div
-          className="slider-track-fill"
-          style={fillStyle}
-          layout
-          transition={{ type: "spring", stiffness: 380, damping: 36 }}
-        />
-        {handles.map(({ id, pct }) => (
-          <button
-            key={id}
-            type="button"
-            className={`slider-handle ${dragging === id ? "slider-handle-dragging" : ""}`}
-            style={{ left: `${pct}%` }}
-            onPointerDown={(e) => {
-              e.preventDefault();
-              setDragging(id);
-            }}
-            aria-label={`Adjust ${id} forecast`}
+    <div className="slider-zone">
+      <div className="slider-track-inset">
+        <div
+          ref={trackRef}
+          className="slider-track"
+          role="group"
+          aria-label="Forecast price selection"
+        >
+          <div className="slider-track-bg" aria-hidden />
+          <motion.div
+            className="slider-track-fill"
+            style={fillStyle}
+            layout
+            transition={{ type: "spring", stiffness: 380, damping: 36 }}
           />
-        ))}
+          {handles.map(({ id, pct }) => (
+            <button
+              key={id}
+              type="button"
+              className={`slider-handle ${dragging === id ? "slider-handle-dragging" : ""}`}
+              style={{ left: `${pct}%` }}
+              onPointerDown={(e) => {
+                e.preventDefault();
+                setDragging(id);
+              }}
+              aria-label={`Adjust ${id} forecast`}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
