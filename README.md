@@ -26,18 +26,15 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 
 ### Supabase
 
-```sql
-create table waitlist (
-  id uuid primary key default gen_random_uuid(),
-  email text unique not null,
-  created_at timestamptz default now()
-);
+1. Create a project at [supabase.com](https://supabase.com).
+2. Open **SQL Editor** and run the full script in [`supabase/waitlist.sql`](supabase/waitlist.sql).
 
-alter table waitlist enable row level security;
+That script creates the `waitlist` table with:
 
-create policy "Allow anonymous inserts"
-  on waitlist for insert to anon with check (true);
-```
+- **Unique emails** — duplicate signups return Postgres error `23505` (handled in the UI as “already on the waitlist”).
+- **Format validation** — invalid emails are rejected by a `CHECK` constraint (same pattern as the client).
+- **Normalized storage** — a trigger trims and lowercases emails before insert.
+- **RLS** — anonymous users can **insert only**; they cannot read or modify rows.
 
 ## Development
 
