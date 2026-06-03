@@ -119,14 +119,14 @@ function PredictionSlider({
       : [{ id: "single", pct: thresholdPct }];
 
   return (
-    <div className="w-full px-0.5 py-1">
+    <div className="slider-zone w-full max-w-full">
       <div
         ref={trackRef}
-        className="slider-rail slider-rail-compact"
+        className="slider-rail"
         role="group"
         aria-label="Forecast price selection"
       >
-        <div className="slider-track-bg" />
+        <div className="slider-track-bg" aria-hidden />
         <motion.div
           className="slider-track-fill"
           style={fillStyle}
@@ -137,7 +137,7 @@ function PredictionSlider({
           <button
             key={id}
             type="button"
-            className={`slider-handle slider-handle-compact ${dragging === id ? "slider-handle-dragging" : ""}`}
+            className={`slider-handle ${dragging === id ? "slider-handle-dragging" : ""}`}
             style={{ left: `${pct}%` }}
             onPointerDown={(e) => {
               e.preventDefault();
@@ -193,7 +193,7 @@ export function MarketDemo() {
           <TradingViewChart />
         </div>
 
-        <div className="flex w-full min-w-0 flex-col gap-5 sm:gap-4 lg:gap-4">
+        <div className="controls-panel flex w-full min-w-0 flex-col gap-5 sm:gap-4 lg:gap-4">
           <div className="flex flex-wrap justify-center gap-2 lg:justify-start">
             {MODES.map((m) => (
               <button
